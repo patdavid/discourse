@@ -189,6 +189,7 @@ Discourse::Application.routes.draw do
 
     resources :themes, constraints: AdminConstraint.new
     post "themes/import" => "themes#import"
+    post "themes/upload_asset" => "themes#upload_asset"
     get "themes/:id/preview" => "themes#preview"
 
     scope "/customize", constraints: AdminConstraint.new do
@@ -200,9 +201,9 @@ Discourse::Application.routes.draw do
 
       # They have periods in their URLs often:
       get 'site_texts'          => 'site_texts#index'
-      get 'site_texts/(:id)'    => 'site_texts#show',   constraints: { id: /[\w.\-]+/i }
-      put 'site_texts/(:id)'    => 'site_texts#update', constraints: { id: /[\w.\-]+/i }
-      delete 'site_texts/(:id)' => 'site_texts#revert', constraints: { id: /[\w.\-]+/i }
+      get 'site_texts/(:id)'    => 'site_texts#show',   constraints: { id: /[\w.\-\+]+/i }
+      put 'site_texts/(:id)'    => 'site_texts#update', constraints: { id: /[\w.\-\+]+/i }
+      delete 'site_texts/(:id)' => 'site_texts#revert', constraints: { id: /[\w.\-\+]+/i }
 
       get 'email_templates'          => 'email_templates#index'
       get 'email_templates/(:id)'    => 'email_templates#show',   constraints: { id: /[0-9a-z_.]+/ }
@@ -323,7 +324,9 @@ Discourse::Application.routes.draw do
     post "#{root_path}/toggle-anon" => "users#toggle_anon"
     post "#{root_path}/read-faq" => "users#read_faq"
     get "#{root_path}/search/users" => "users#search_users"
-    get "#{root_path}/account-created/" => "users#account_created"
+
+    get({ "#{root_path}/account-created/" => "users#account_created" }.merge(index == 1 ? { as: :users_account_created } : {as: :old_account_created}))
+
     get "#{root_path}/account-created/resent" => "users#account_created"
     get "#{root_path}/account-created/edit-email" => "users#account_created"
     get({ "#{root_path}/password-reset/:token" => "users#password_reset" }.merge(index == 1 ? { as: :password_reset_token } : {}))
